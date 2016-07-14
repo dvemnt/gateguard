@@ -331,7 +331,10 @@ class ArrayFieldTest(unittest.TestCase):
 
         self.assertEqual(
             context.exception.error,
-            [fields.IntegerField.default_error_messages['invalid']]
+            fields.ArrayField.default_error_messages['child'].format(
+                index=0,
+                message=fields.IntegerField.default_error_messages['invalid']
+            )
         )
 
 

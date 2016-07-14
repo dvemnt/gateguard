@@ -60,8 +60,10 @@ class Field(object):
 
         return value
 
-    def fail(self, error_code):
-        raise ValidationError(self.error_messages[error_code].format(self))
+    def fail(self, error_code, **kwargs):
+        raise ValidationError(
+            self.error_messages[error_code].format(self, **kwargs)
+        )
 
     def is_valid(self, value):
         raise NotImplementedError()
@@ -186,6 +188,7 @@ class ArrayField(TypedField):
     type = list
     default_error_messages = {
         'invalid': 'Value must be a valid array',
+        'child': '{index}: {message}'
     }
 
     def __init__(self, *, field=None, **kwargs):
@@ -197,16 +200,12 @@ class ArrayField(TypedField):
 
         if self.field:
             values = []
-            errors = []
 
-            for item in value:
+            for index, item in enumerate(value):
                 try:
                     values.append(self.field.to_internal_value(item))
                 except ValidationError as e:
-                    errors.append(e.error)
-
-            if errors:
-                raise ValidationError(errors)
+                    self.fail('child', index=index, message=e.error)
 
             return values
 
