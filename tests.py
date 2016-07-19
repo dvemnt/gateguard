@@ -24,16 +24,39 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual('Milli', data['name'])
         self.assertEqual(['Beautiful'], data['badges'])
 
+    def test_validate_method(self):
+
+        class TestSchema(Schema):
+
+            pk = fields.IntegerField(min_value=1)
+            name = fields.StringField(min_length=2)
+            badges = fields.ArrayField(field=fields.StringField())
+
+            @staticmethod
+            def validate_name(value):
+                return value.upper()
+
+        data = TestSchema.validate(
+            {'pk': '1', 'name': 'Milli', 'badges': ['Beautiful']}
+        )
+
+        self.assertEqual(1, data['pk'])
+        self.assertEqual('MILLI', data['name'])
+        self.assertEqual(['Beautiful'], data['badges'])
+
     def test_validate__stop_on_error(self):
+
         def validator(value):
             if value < 2:
                 raise ValidationError('error', 100)
 
-        schema = self.TestSchema()
-        schema.__fields__['pk'].validators.append(validator)
+        class TestSchema(Schema):
+
+            pk = fields.IntegerField(min_value=1, validators=[validator])
+            name = fields.StringField(min_length=2)
 
         with self.assertRaises(ValidationError) as context:
-            schema.validate({'pk': '1', 'name': 'M'}, stop_on_error=True)
+            TestSchema.validate({'pk': '1', 'name': 'M'}, stop_on_error=True)
 
         self.assertEqual(context.exception.error, {'pk': 'error'})
         self.assertEqual(context.exception.code, 100)

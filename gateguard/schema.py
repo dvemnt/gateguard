@@ -39,7 +39,15 @@ class Schema(object, metaclass=MetaSchema):
         for name, field in cls.__fields__.items():
             try:
                 value = data.get(name, field.default)
-                data[name] = field.validate(value)
+                value = field.validate(value)
+
+                method = getattr(cls, 'validate_{}'.format(name), None)
+
+                if method:
+                    value = method(value)
+
+                data[name] = value
+
             except ValidationError as e:
                 errors[name] = e.error
 
