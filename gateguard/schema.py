@@ -15,12 +15,16 @@ class MetaSchema(type):
     def __new__(mcs, name, bases, attributes):
         fields = collections.OrderedDict()
 
+        for parent in bases:
+            if hasattr(parent, '__fields__'):
+                fields.update(parent.__fields__)
+
         for name, field in attributes.items():
             if isinstance(field, Field):
                 fields[name] = field
 
         for field in fields:
-            attributes.pop(field)
+            attributes.pop(field, None)
 
         cls = type.__new__(mcs, name, bases, attributes)
 
@@ -44,7 +48,7 @@ class Schema(object, metaclass=MetaSchema):
                 method = getattr(cls, 'validate_{}'.format(name), None)
 
                 if method:
-                    value = method(value)
+                    value = method(cls, value)
 
                 data[name] = value
 

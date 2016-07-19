@@ -32,8 +32,7 @@ class SchemaTest(unittest.TestCase):
             name = fields.StringField(min_length=2)
             badges = fields.ArrayField(field=fields.StringField())
 
-            @staticmethod
-            def validate_name(value):
+            def validate_name(self, value):
                 return value.upper()
 
         data = TestSchema.validate(
@@ -60,6 +59,20 @@ class SchemaTest(unittest.TestCase):
 
         self.assertEqual(context.exception.error, {'pk': 'error'})
         self.assertEqual(context.exception.code, 100)
+
+    def test_validate__inheritance(self):
+
+        class TestSchema(self.TestSchema):
+
+            parent = fields.StringField(required=False)
+
+            def validate_name(self, value):
+                return value.upper()
+
+        data = TestSchema.validate({'pk': '1', 'name': 'Milli'})
+
+        self.assertEqual(data['pk'], 1)
+        self.assertEqual(data['name'], 'MILLI')
 
     def test_validate__invalid_pk(self):
         schema = self.TestSchema()
