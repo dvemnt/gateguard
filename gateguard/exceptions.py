@@ -8,7 +8,8 @@ class GateguardError(Exception):
 
 class ValidationError(GateguardError):
 
-    def __init__(self, error=None):
+    def __init__(self, error=None, code=None):
         self.error = error
+        self.code = code
 
         super().__init__(self.error)

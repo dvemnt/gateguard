@@ -24,6 +24,20 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual('Milli', data['name'])
         self.assertEqual(['Beautiful'], data['badges'])
 
+    def test_validate__stop_on_error(self):
+        def validator(value):
+            if value < 2:
+                raise ValidationError('error', 100)
+
+        schema = self.TestSchema()
+        schema.__fields__['pk'].validators.append(validator)
+
+        with self.assertRaises(ValidationError) as context:
+            schema.validate({'pk': '1', 'name': 'M'}, stop_on_error=True)
+
+        self.assertEqual(context.exception.error, {'pk': 'error'})
+        self.assertEqual(context.exception.code, 100)
+
     def test_validate__invalid_pk(self):
         schema = self.TestSchema()
 
@@ -95,13 +109,6 @@ class FieldTest(unittest.TestCase):
 
         self.assertEqual(1, field.to_representation(1))
 
-
-class BooleanFieldTest(unittest.TestCase):
-
-    def test_validate(self):
-        field = fields.BooleanField()
-        self.assertTrue(field.validate(True))
-
     def test_validate__with_validator(self):
         def validator(value):
             return 'True' if value else 'False'
@@ -121,6 +128,13 @@ class BooleanFieldTest(unittest.TestCase):
             field.validate(True)
 
         self.assertEqual(context.exception.error, None)
+
+
+class BooleanFieldTest(unittest.TestCase):
+
+    def test_validate(self):
+        field = fields.BooleanField()
+        self.assertTrue(field.validate(True))
 
     def test_validate__invalid(self):
         field = fields.BooleanField()

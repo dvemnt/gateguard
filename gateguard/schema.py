@@ -33,7 +33,7 @@ class MetaSchema(type):
 class Schema(object, metaclass=MetaSchema):
 
     @classmethod
-    def validate(cls, data):
+    def validate(cls, data, stop_on_error=False):
         errors = {}
 
         for name, field in cls.__fields__.items():
@@ -42,6 +42,9 @@ class Schema(object, metaclass=MetaSchema):
                 data[name] = field.validate(value)
             except ValidationError as e:
                 errors[name] = e.error
+
+                if stop_on_error:
+                    raise ValidationError(errors, e.code)
 
         if errors:
             raise ValidationError(errors)
