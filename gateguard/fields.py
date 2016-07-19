@@ -56,7 +56,7 @@ class Field(object):
         self.is_valid(value)
 
         for validator in self.validators:
-            validator(value)
+            value = validator(value)
 
         return value
 

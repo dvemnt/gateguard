@@ -104,6 +104,14 @@ class BooleanFieldTest(unittest.TestCase):
 
     def test_validate__with_validator(self):
         def validator(value):
+            return 'True' if value else 'False'
+
+        field = fields.BooleanField(validators=[validator])
+
+        self.assertEqual('True', field.validate(True))
+
+    def test_validate__with_validator__error(self):
+        def validator(value):
             if value:
                 raise ValidationError()
 
