@@ -43,7 +43,7 @@ class Field(object):
         self.error_messages = messages
 
     def validate(self, value=None):
-        value = value or self.default
+        value = value if value is not None else self.default
 
         if value is None:
             if self.required:

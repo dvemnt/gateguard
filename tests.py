@@ -271,6 +271,11 @@ class IntegerFieldTest(unittest.TestCase):
             )
         )
 
+    def test_validate__zero(self):
+        field = fields.IntegerField(min_value=0)
+
+        self.assertEqual(0, field.validate(0))
+
 
 class FloatFieldTest(unittest.TestCase):
 
